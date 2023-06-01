@@ -38,7 +38,10 @@ class CalcController {
     }
 
     addOperation(value) {
-        this.operation.push(value);
+        if(this.operation[this.operation.length -1]) {
+            this.operation.push(value);
+        }
+        
     }
 
 
