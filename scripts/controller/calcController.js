@@ -1,7 +1,7 @@
 class CalcController {
 
     constructor() {
-        this.operation = [];
+        this._operation = [];
         this._locale = 'pt-BR';
         this._dispalyCalcEl = document.querySelector('#display');
         this._dateEl = document.querySelector('#data');
@@ -30,18 +30,30 @@ class CalcController {
     }
 
     clearAll() {
-        this.operation = [];
+        this._operation = [];
     }
 
     cancelEntry() {
-        this.operation.pop();
+        this._operation.pop();
     }
 
+    
     addOperation(value) {
-        if(this.operation[this.operation.length -1]) {
-            this.operation.push(value);
+
+        if (isNaN(this.getLastOperation())) {
+            console.log('aqui');
+            this._operation.push(value);
+            console.log(this._operation);
+
+        } else {
+            console.log(this._operation.pop());
         }
-        
+
+             
+    }
+
+    getLastOperation(){
+        return this._operation[this._operation.length -1];
     }
 
 
@@ -66,7 +78,7 @@ class CalcController {
 
                 break;
 
-            case 'cesubtracao':
+            case 'subtracao':
 
                 break;
 
@@ -86,6 +98,10 @@ class CalcController {
 
                 break;
 
+            case 'ponto':
+
+                break;
+
             case '0':
             case '1':
             case '2':
@@ -100,7 +116,7 @@ class CalcController {
                 break;
 
             default:
-                this.setError();
+
                 break;
         }
     }
