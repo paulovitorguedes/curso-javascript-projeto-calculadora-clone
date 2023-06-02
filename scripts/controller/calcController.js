@@ -1,17 +1,19 @@
 class CalcController {
 
     constructor() {
-        this._operation = [];
         this._locale = 'pt-BR';
+        this._operation = [];
         this._dispalyCalcEl = document.querySelector('#display');
         this._dateEl = document.querySelector('#data');
         this._timeEl = document.querySelector('#hora');
         this._currentDate;
+
         this.initialize();
         this.initButtonsEvents();
     }
 
     initialize() {
+        //Busca a funcao setDisplayDateTime a cada 1 segundo 
         this.setDisplayDateTime();
         let interval = setInterval(() => {
             this.setDisplayDateTime();
@@ -21,49 +23,107 @@ class CalcController {
         // setTimeout(() => {
         //     clearInterval(interval);
         // }, 5000);
+    }
 
+    // Funcao para formatacao de data e hora a serem apresentados no display
+    setDisplayDateTime() {
+        this.dispalyTime = this.currentDate.toLocaleTimeString(this._locale);
+        this.dispalyDate = this.currentDate.toLocaleDateString(this._locale, {
+            day: '2-digit',
+            month: 'short',
+            year: "numeric"
+        });
     }
 
 
-    setError() {
-        this.dispalyCalc = 'Error';
+
+
+
+
+    // Criacao dos eventos para os botoes ----------------------
+    initButtonsEvents() {
+        //buttons sera uma lista de nods
+        const buttons = document.querySelectorAll('#buttons > g, #parts > g');//todos os elementos <g> filhos de buttons parts
+       
+        buttons.forEach(btn => {
+
+            this.addEventListenerAll(btn, 'click drag', e => {
+                let textBtn = btn.className.baseVal.replace('btn-', '');
+                this.execBtn(textBtn);
+                console.log(textBtn);
+            });
+
+            this.addEventListenerAll(btn, 'mouseover mouseup mousedown', e => {
+                btn.style.cursor = 'pointer';
+            });
+
+        });
     }
 
+    // Funcao para adicionar mais de um evento em um mesmo elemento
+    addEventListenerAll(element, events, fn) {
+        events.split(" ").forEach(event => {
+            element.addEventListener(event, fn, false);//flase para n permitir acao duplicada 
+        });
+    }
+    // Fim dos eventos para os botoes ----------------------
+
+
+
+
+
+
+
+
+    //Funcoes para botoes de operações --------------
+    // Botao AC
     clearAll() {
         this._operation = [];
     }
 
+    // Botao CE
     cancelEntry() {
         this._operation.pop();
     }
-
+    // Fim para botoes de operações   --------------
     
+
+
+
+
+
+    // Funcoes pra controller das operacoes do calculator ----------------------------
+    //Funcao apresenta mens Error em caso de falha 
+    setError() {
+        this.dispalyCalc = 'Error';
+    }
+
+
     addOperation(value) {
 
-        if (isNaN(this.getLastOperation())) {
-            console.log('aqui');
+        if (isNaN(this.getLastOperation())) { //verifica se a ultima posicao do array is not number
             this._operation.push(value);
-            console.log(this._operation);
 
         } else {
             console.log(this._operation.pop());
-        }
-
-             
+        }   
     }
 
+    // Funcao retorna o valor da ultima posicao do Array operation
     getLastOperation(){
         return this._operation[this._operation.length -1];
     }
+    // Fim pra controller das operacoes do calculator ----------------------------
 
 
 
-    addEventListenerAll(element, events, fn) {
-        events.split(" ").forEach(event => {
-            element.addEventListener(event, fn, false);
-        });
-    }
 
+
+
+
+
+    
+    // Fumcao para acao dos botoes
     execBtn(value) {
         switch (value) {
             case 'ac':
@@ -116,41 +176,21 @@ class CalcController {
                 break;
 
             default:
-
+                this.setError();
                 break;
         }
     }
 
-    initButtonsEvents() {
-        //buttons será uma lista de nod
-        let buttons = document.querySelectorAll('#buttons > g, #parts > g');
 
-        //console.log(buttons);
-        buttons.forEach(btn => {
-
-            this.addEventListenerAll(btn, 'click drag', e => {
-                let textBtn = btn.className.baseVal.replace('btn-', '');
-                console.log(textBtn);
-                this.execBtn(textBtn);
-            });
-
-            this.addEventListenerAll(btn, 'mouseover mouseup mousedown', e => {
-                btn.style.cursor = 'pointer';
-            });
-
-        });
-    }
-
-    setDisplayDateTime() {
-        this.dispalyTime = this.currentDate.toLocaleTimeString(this._locale);
-        this.dispalyDate = this.currentDate.toLocaleDateString(this._locale, {
-            day: '2-digit',
-            month: 'short',
-            year: "numeric"
-        });
-    }
+    
 
 
+
+   
+
+
+
+    //Get's e set's
     get dispalyCalc() {
         return this._dispalyCalcEl.innerHTML;
     }
@@ -176,8 +216,6 @@ class CalcController {
     set dispalyDate(value) {
         this._dateEl.innerHTML = value;
     }
-
-
 
     get currentDate() {
         return new Date();
