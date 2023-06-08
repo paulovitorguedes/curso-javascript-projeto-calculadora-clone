@@ -44,7 +44,7 @@ class CalcController {
     initButtonsEvents() {
         //buttons sera uma lista de nods
         const buttons = document.querySelectorAll('#buttons > g, #parts > g');//todos os elementos <g> filhos de buttons parts
-       
+
         buttons.forEach(btn => {
 
             this.addEventListenerAll(btn, 'click drag', e => {
@@ -86,7 +86,7 @@ class CalcController {
         this._operation.pop();
     }
     // Fim para botoes de operações   --------------
-    
+
 
 
 
@@ -98,20 +98,64 @@ class CalcController {
         this.dispalyCalc = 'Error';
     }
 
-
+    //
     addOperation(value) {
 
-        if (isNaN(this.getLastOperation())) { //verifica se a ultima posicao do array is not number
-            this._operation.push(value);
+        if (isNaN(this.getLastOperation())) { //checks if the last position is not a Number
 
+            //last position is not a Number
+            if (this.isOperation(value)) { //checks if the value is an operation
+
+                //last position is not a Number and value is an operation
+                if (this.isOperation(this.getLastOperation)) { 
+                    this.setLastOperation(value);
+
+                }
+
+            } else if (isNaN(value)) { //checks if the value is not a Number
+                //value is not a Number
+                console.log(`teste ${value}`);
+
+            } else {
+                //value is a Number
+                this.addLastOperation(value);
+
+            }
+
+
+            
         } else {
-            console.log(this._operation.pop());
-        }   
+            //last position is a Number
+            if (this.isOperation(value)) {
+                this.addLastOperation(value);
+
+            } else {
+                let newValue = this.getLastOperation().toString() + value.toString();
+                this.setLastOperation(parseInt(newValue));
+            }
+            
+        }
     }
 
     // Funcao retorna o valor da ultima posicao do Array operation
-    getLastOperation(){
-        return this._operation[this._operation.length -1];
+    getLastOperation() {
+        return this._operation[this._operation.length - 1];
+    }
+
+    setLastOperation(value) {
+        this._operation[this._operation.length - 1] = value;
+        console.log(this._operation);
+    }
+
+    addLastOperation(value) {
+        this._operation.push(value);
+        console.log(this._operation);
+    }
+
+    //Funcao retorna true caso value for um button de operacao 
+    isOperation(value) {
+        //returm true or false
+        return ['+', '-', '*', '/', '%'].indexOf(value) > -1;
     }
     // Fim pra controller das operacoes do calculator ----------------------------
 
@@ -122,7 +166,7 @@ class CalcController {
 
 
 
-    
+
     // Fumcao para acao dos botoes
     execBtn(value) {
         switch (value) {
@@ -135,23 +179,23 @@ class CalcController {
                 break;
 
             case 'soma':
-
+                this.addOperation('+');
                 break;
 
             case 'subtracao':
-
+                this.addOperation('-');
                 break;
 
             case 'divisao':
-
+                this.addOperation('/');
                 break;
 
             case 'multiplicacao':
-
+                this.addOperation('*');
                 break;
 
             case 'porcento':
-
+                this.addOperation('%');
                 break;
 
             case 'igual':
@@ -159,7 +203,7 @@ class CalcController {
                 break;
 
             case 'ponto':
-
+                this.addOperation('.');
                 break;
 
             case '0':
@@ -182,11 +226,11 @@ class CalcController {
     }
 
 
-    
 
 
 
-   
+
+
 
 
 
