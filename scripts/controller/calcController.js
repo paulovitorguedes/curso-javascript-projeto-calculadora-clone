@@ -109,7 +109,14 @@ class CalcController {
         this.result = '';
     }
 
-    //
+    
+    addDot() {
+        if (parseInt(this.getLastOperation()) == 0) {
+            this.addLastOperation(value, false);
+            console.log('teste');
+        }
+    }
+
     addOperation(value) {
 
         if (isNaN(this.getLastOperation())) {
@@ -129,12 +136,8 @@ class CalcController {
                     }
                 }
 
-            } else if (isNaN(value)) {
-                console.log(value);
-
             } else {
                 //Valor digitado é um número
-                
                 this.addLastOperation(value, false);
             }
 
@@ -142,7 +145,7 @@ class CalcController {
 
         } else {
             //última posição do Array Operation é um número
-            
+
             if (this.isOperation(value)) {
                 //Valor digitado é um operador
 
@@ -151,8 +154,14 @@ class CalcController {
             } else {
                 if (this.result == '') {
                     //Valor digitado é um número e será concatenado com o número da ultima posição do Array
-                    let newValue = this.getLastOperation().toString() + value.toString();
-                    this.setLastOperation(newValue);
+
+                    if (parseInt(this.getLastOperation()) == 0) {
+                        this.setLastOperation(value);
+
+                    } else {
+                        let newValue = this.getLastOperation().toString() + value.toString();
+                        this.setLastOperation(newValue);
+                    }
 
                 } else {
                     //O valor no dispay é o result e não poderá ser concatenado com a entrado de um novo número
@@ -163,6 +172,7 @@ class CalcController {
             }
 
         }
+
     }
 
     // Funcao retorna o valor da ultima posicao do Array operation
@@ -245,17 +255,17 @@ class CalcController {
             if (this.lastOperation != '%') {
                 this.result = eval(this._operation.join(' '));
                 this._operation = [this.result, this.lastOperation];
-            
+
             } else {
                 if (this._operation.length == 1) {
                     this.result = (this.getLastOperation() / 100);
                     this._operation = [this.result];
-                
+
                 } else if (this._operation.length > 2) {
                     let value = (this.getLastOperation() / 100) * this._operation[0];
                     this.lastOperation = this._operation[1]
                     this.setLastOperation(value);
-                
+
                 } else {
                     return false;
                 }
@@ -312,7 +322,7 @@ class CalcController {
                 break;
 
             case 'ponto':
-                this.addOperation('.');
+                this.addDot();
                 break;
 
             case '0':
