@@ -1,6 +1,7 @@
 class CalcController {
 
     constructor() {
+        this._audio = new Audio('../../click.mp3');
         this._locale = 'pt-BR';
         this._operation = [0];
         this._dispalyCalcEl = document.querySelector('#display');
@@ -8,18 +9,24 @@ class CalcController {
         this._timeEl = document.querySelector('#hora');
         this._currentDate;
         this._lastOperation = '';
-        this._lastNumber = '';
+        this._lastNumber = 0;
         this._result = '';
+        this._audioOnOff = false;
 
         this.initialize();
         this.initButtonsEvents();
+        this.initKeyBoard();
+        this.pastFromClipboard();
     }
 
     initialize() {
+
         //Busca a funcao setDisplayDateTime a cada 1 segundo 
         this.setDisplayDateTime();
         let interval = setInterval(() => {
+
             this.setDisplayDateTime();
+            
         }, 1000);
 
         this.dispalyCalc = this.getLastOperation();
@@ -27,6 +34,21 @@ class CalcController {
         // setTimeout(() => {
         //     clearInterval(interval);
         // }, 5000);
+
+
+
+        document.querySelectorAll('.btn-ac').forEach(btn => {
+
+            btn.addEventListener('dblclick', e=> {
+
+                this.toggleAudio();
+
+            });
+
+        });
+
+
+
     }
 
     // Funcao para formatacao de data e hora a serem apresentados no display
@@ -39,9 +61,17 @@ class CalcController {
         });
     }
 
+    toggleAudio() {
 
+        this._audioOnOff = !this._audioOnOff;
+    }
 
-
+    playAudio() {
+        if (this._audioOnOff) {
+            this._audio.currentTime = 0;
+            this._audio.play();
+        }
+    }
 
 
     // Criacao dos eventos para os botoes ----------------------
@@ -69,10 +99,34 @@ class CalcController {
             element.addEventListener(event, fn, false);//flase para n permitir acao duplicada 
         });
     }
+
+
+    initKeyBoard() {
+        document.addEventListener('keyup', e => {
+            this.execBtn(e.key, e);
+            //console.log(e.key);
+        });
+    }
     // Fim dos eventos para os botoes ----------------------
 
 
+    copToClipboard() {
+        let input = document.createElement('input'); //cria um elemento input
+        input.value = this.dispalyCalc; //adiciona o valor do display ao imput
 
+        document.body.appendChild(input); //adiciona ao body o elemento criado input
+
+        input.select(); //seleciona o input
+        document.execCommand('copy'); //copia os dados para area de tranferencia do windows
+        input.remove(); //remove o input da tela
+    }
+
+    pastFromClipboard() {
+        document.addEventListener('paste', e=> {
+            let text = e.clipboardData.getData('Text');
+            this.dispalyCalc = parseFloat(text);
+        });
+    }
 
 
 
@@ -83,6 +137,7 @@ class CalcController {
     clearAll() {
         this._operation = [0];
         this.result = '';
+        this._lastNumber = 0;
         this.dispalyCalc = this.getLastOperation();
     }
 
@@ -109,13 +164,42 @@ class CalcController {
         this.result = '';
     }
 
-    
-    addDot() {
-        if (parseInt(this.getLastOperation()) == 0) {
-            this.addLastOperation(value, false);
-            console.log('teste');
+    //Função retorna True caso enontre um ponto na última operação 
+    searchDot() {
+        let dot = false;
+        if (!this.isOperation(this.getLastOperation())) {
+            let value = this.getLastOperation().toString();
+            if (value.indexOf('.') >= 0) {
+                dot = true;
+            }
         }
+        return dot;
     }
+
+
+    addDot() {
+        if (!this.searchDot()) {
+            //última operação não possui ponto
+
+            if (!isNaN(this.getLastOperation())) {
+                //última operação é um número
+
+                this.setLastOperation(this.getLastOperation() + '.');
+
+            } else if (this.isOperation(this.getLastOperation())) {
+                //última operação é um sinal de operação 
+
+                this.addLastOperation("0.", false)
+            }
+
+
+        }
+        // if (parseInt(this.getLastOperation()) == 0) {
+        //     this.addLastOperation('.', false);
+
+        // }
+    }
+
 
     addOperation(value) {
 
@@ -155,7 +239,7 @@ class CalcController {
                 if (this.result == '') {
                     //Valor digitado é um número e será concatenado com o número da ultima posição do Array
 
-                    if (parseInt(this.getLastOperation()) == 0) {
+                    if (parseInt(this.getLastOperation()) == 0 && !this.searchDot()) {
                         this.setLastOperation(value);
 
                     } else {
@@ -225,7 +309,13 @@ class CalcController {
 
 
     setDisplayCalc() {
-        this._dispalyCalcEl.innerHTML = this._operation.join(' ');
+        if (this._operation.join(' ').toString().length <= 10) {
+            this._dispalyCalcEl.innerHTML = this._operation.join(' ');
+        
+        } else {
+            this.setError();
+        }
+        
     }
 
 
@@ -287,41 +377,55 @@ class CalcController {
 
 
     // Fumcao para acao dos botoes
-    execBtn(value) {
+    execBtn(value, event) {
+
+        this.playAudio()
+
         switch (value) {
             case 'ac':
+            case 'Escape':
                 this.clearAll();
                 break;
 
             case 'ce':
+            case 'Backspace':
                 this.cancelEntry();
                 break;
 
             case 'soma':
+            case '+':
                 this.addOperation('+');
                 break;
 
             case 'subtracao':
+            case '-':
                 this.addOperation('-');
                 break;
 
             case 'divisao':
+            case '/':
                 this.addOperation('/');
                 break;
 
             case 'multiplicacao':
+            case '*':
                 this.addOperation('*');
                 break;
 
             case 'porcento':
+            case '%':
                 this.addOperation('%');
                 break;
 
             case 'igual':
+            case '=':
+            case 'Enter':
                 this.calc(true);
                 break;
 
             case 'ponto':
+            case '.':
+            case ',':
                 this.addDot();
                 break;
 
@@ -338,8 +442,11 @@ class CalcController {
                 this.addOperation(parseInt(value));
                 break;
 
-            default:
-                this.setError();
+            case 'c':
+                if (event.ctrlKey) {
+                    console.log(event);
+                    this.copToClipboard()
+                };
                 break;
         }
     }
@@ -359,7 +466,11 @@ class CalcController {
     }
 
     set dispalyCalc(value) {
-        this._dispalyCalcEl.innerHTML = value;
+
+        if (value.toString.length <= 10) {
+            this._dispalyCalcEl.innerHTML = value;
+        }
+        
     }
 
 
